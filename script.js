@@ -1,13 +1,18 @@
 /* global console */
 "use strict";
+
+/* 
+    WHATSAPP WEB API (UNOFFICIAL)
+    github.com/DaniGuardiola/whatsapp-web-api
+*/
 var API = (function() {
 
     // VARIABLES
     var parsingDate;
     var elements = {};
-    elements.app = document.querySelector(".app-wrapper > .app");
 
     function refreshConversationElements() {
+        elements.app = document.querySelector(".app-wrapper > .app");
         elements.msgList = elements.app.querySelector(".message-list");
     }
 
@@ -16,17 +21,62 @@ var API = (function() {
         return elements.msgList.querySelectorAll(".message");
     }
 
-    function parseConversationMessageElements(collection) {
-        var messages = [];
-        for (var i = 0; i < collection.length; i++) {
-            if (collection[i].classList.contains("message-system")) {
-                parseDateSystemMessage(collection[i]);
-            } else {
-                messages.push(parseMessageElement(collection[i]));
+    function parseMessageElements(collection, asyncTasks) {
+        var promise = new Promise(function(resolve) {
+            var messages = [];
+            var message;
+            var promises = [];
+
+            var func = function(arrayIndex) {
+
+                // Images
+                if (message.type === "image") {
+                    if (message.loaded) {
+                        promises.push(loadImageAsync(message.url).then(function(image) {
+                            messages[arrayIndex].blob = image;
+                        }));
+                    }
+                }
+            };
+
+            for (var i = 0; i < collection.length; i++) {
+                if (collection[i].classList.contains("message-system")) {
+                    parseDateSystemMessage(collection[i]);
+                } else {
+                    message = parseMessageElement(collection[i]);
+                    var index = messages.push(message) - 1;
+
+                    // Async tasks
+                    if (asyncTasks) {
+                        (func)(index);
+                    }
+                }
             }
-        }
-        parsingDate = null;
-        return messages;
+            parsingDate = null;
+            Promise.all(promises).then(function() {
+                resolve(messages);
+            });
+        });
+        return promise;
+    }
+
+    /* ASYNC TASKS */
+    function loadImageAsync(url) {
+        var promise = new Promise(function(resolve) {
+            var x = new XMLHttpRequest();
+            x.open('GET', url);
+            x.responseType = 'blob';
+            x.onload = function() {
+                var blob = x.response;
+                var fr = new FileReader();
+                fr.onloadend = function() {
+                    resolve(fr.result);
+                };
+                fr.readAsDataURL(blob);
+            };
+            x.send();
+        });
+        return promise;
     }
 
     function parseDateSystemMessage(element) {
@@ -91,6 +141,7 @@ var API = (function() {
         message.direction = getMessageDirection(element);
 
         // Type:
+        // - link
         // - chat
         // - contact
         // - location
@@ -118,9 +169,25 @@ var API = (function() {
 
         // Get text for type:
         // - chat
-        // image with caption
-        if (message.type === "chat" || (message.type === "image" && element.querySelector(".bubble-image-caption"))) {
+        // - link
+        // - image (with caption)
+        if (message.type === "link" || message.type === "chat" || (message.type === "image" && element.querySelector(".bubble-image-caption"))) {
             message.text = getText(element);
+        }
+
+        // Get load status for type:
+        // - image
+        if (message.type === "image") {
+            message.loaded = getImageIsLoaded(element);
+            if (!message.loaded) {
+                message.loading = getImageIsLoading(element);
+            }
+        }
+
+        // Get url for type:
+        // - image (loaded)
+        if (message.type === "image" && message.loaded) {
+            message.url = getImageUrl(element);
         }
 
         return message;
@@ -137,6 +204,9 @@ var API = (function() {
     }
 
     function getMessageType(element) {
+        if (element.querySelector(".link-preview-container")) {
+            return "link";
+        }
         if (element.classList.contains("message-chat")) {
             return "chat";
         }
@@ -184,8 +254,23 @@ var API = (function() {
         return clone.innerHTML;
     }
 
+    function getImageIsLoaded(element) {
+        return !element.querySelector(".media-state-controls");
+    }
+
+    function getImageIsLoading(element) {
+        // WARNING
+        // This method will also return true
+        // if the image is loaded
+        return !element.querySelector(".btn-meta");
+    }
+
+    function getImageUrl(element) {
+        return element.querySelector("img").src;
+    }
+
     function getConversationMessages() {
-        return parseConversationMessageElements(getConversationMessageElements());
+        return parseMessageElements(getConversationMessageElements(), true);
     }
 
     function DEBUGshowCurrentConversationText() {
@@ -204,11 +289,37 @@ var API = (function() {
     }
 
     function DEBUGshowCurrentConversationMessages() {
-        var msgs = getConversationMessages();
-        for (var i = 0; i < msgs.length; i++) {
-            console.log(DumpObjectIndented(msgs[i], "    "));
-            console.log(msgs[i].datetime);
-        }
+        getConversationMessages().then(function(msgs) {
+            for (var i = 0; i < msgs.length; i++) {
+                console.log(DumpObjectIndented(msgs[i], "    "));
+                console.log(msgs[i].datetime);
+            }
+        });
+    }
+
+    function DEBUGshareCurrentConversationMessages() {
+        getConversationMessages().then(function(msgs) {
+            var http = new XMLHttpRequest();
+            var url = "http://capturechat.cloud.tilaa.com:3001/api/captures";
+            var data = {
+                userid: 0,
+                messages: msgs
+            };
+
+            http.open("POST", url, true);
+
+            //Send the proper header information along with the request
+            http.setRequestHeader("Content-type", "application/json");
+            http.setRequestHeader("Accept", "application/json");
+
+            http.onreadystatechange = function() { //Call a function when the state changes.
+                if (http.readyState == 4 && http.status == 200) {
+                    console.log("SAVED!!!!!!!!!");
+                    console.log(http.responseText);
+                }
+            };
+            http.send(JSON.stringify(data));
+        });
     }
 
     function DumpObjectIndented(obj, indent) {
@@ -241,6 +352,61 @@ var API = (function() {
     return {
         getConversationMessages: getConversationMessages,
         DEBUGshowCurrentConversationText: DEBUGshowCurrentConversationText,
-        DEBUGshowCurrentConversationMessages: DEBUGshowCurrentConversationMessages
+        DEBUGshowCurrentConversationMessages: DEBUGshowCurrentConversationMessages,
+        DEBUGshareCurrentConversationMessages: DEBUGshareCurrentConversationMessages
     };
+}());
+
+/* CAPTURECHAT CHROME EXTENSION */
+(function() {
+    function buttonClickListener(event) {
+        API.DEBUGshareCurrentConversationMessages();
+    }
+
+    // Add a button
+    function addButton() {
+        var container = document.querySelector(".pane-chat-controls>.menu");
+        var item = document.createElement("div");
+        item.classList.add("menu-item", "social-screencap-button");
+        var button = document.createElement("button");
+        button.classList.add("icon", "capturechat");
+        button.setAttribute("title", "Convert to image");
+        item.appendChild(button);
+        button.addEventListener("click", buttonClickListener);
+
+        container.insertBefore(item, container.children[0]);
+    }
+
+    // App load callback
+    function chatLoadObserver() {
+        // Observe body for app wrapper
+        function observeBody() {
+            var observerBody = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length > 0) {
+                        for (var i = mutation.addedNodes.length - 1; i >= 0; i--) {
+                            if (mutation.addedNodes[i].classList &&
+                                mutation.addedNodes[i].id === "main") {
+                                addButton();
+                                break;
+                            }
+                        }
+                    }
+                });
+            });
+            observerBody.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        }
+
+        observeBody();
+    }
+
+    // Initializes the script
+    function init() {
+        chatLoadObserver();
+    }
+
+    init();
 }());

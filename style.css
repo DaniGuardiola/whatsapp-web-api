@@ -1,125 +1,22 @@
-.google-bouncing-logo {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    -ms-flex-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    -webkit-justify-content: center;
-    -ms-flex-pack: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    transition: opacity 2s 1s;
-    opacity: 0;
-}
-
-.google-bouncing-logo.bouncing {
-    opacity: 1;
-}
-
-.google-bouncing-logo i {
-    -webkit-animation: bounce-google-logo 1.125s ease-in-out infinite alternate;
-    animation: bounce-google-logo 1.125s ease-in-out infinite alternate;
-    display: inline-block;
-    -webkit-transform: translate3d(0, 0, 0) scale(1);
-    transform: translate3d(0, 0, 0) scale(1);
-    text-shadow: rgba(0, 0, 0, 0.35) 0 0 0.02222em;
-    font-family: "Product Sans", "Helvetica Neue", "Helvetica", sans-serif;
-    font-style: normal;
-    white-space: nowrap;
-}
-
-.google-bouncing-logo i:nth-child(1) {
-    -webkit-animation-delay: 0.15s;
-    animation-delay: 0.15s;
-    color: #4285f4;
-}
-
-.google-bouncing-logo i:nth-child(2) {
-    -webkit-animation-delay: 0.3s;
-    animation-delay: 0.3s;
-    color: #ea4335;
-}
-
-.google-bouncing-logo i:nth-child(3) {
-    -webkit-animation-delay: 0.45s;
-    animation-delay: 0.45s;
-    color: #fbbc05;
-}
-
-.google-bouncing-logo i:nth-child(4) {
-    -webkit-animation-delay: 0.6s;
-    animation-delay: 0.6s;
-    color: #4285f4;
-}
-
-.google-bouncing-logo i:nth-child(5) {
-    -webkit-animation-delay: 0.75s;
-    animation-delay: 0.75s;
-    color: #34a853;
-}
-
-.google-bouncing-logo i:nth-child(6) {
-    -webkit-animation-delay: 0.9s;
-    animation-delay: 0.9s;
-    color: #ea4335;
-}
-
-@-webkit-keyframes bounce-google-logo {
-    0% {
-        -webkit-transform: translate3d(0, 0, 0) scale(1);
-        transform: translate3d(0, 0, 0) scale(1);
-        text-shadow: rgba(0, 0, 0, 0.35) 0 0 0.02222em;
-    }
-    100% {
-        -webkit-transform: translate3d(0, -1em, 0) scale(1.1);
-        transform: translate3d(0, -1em, 0) scale(1.1);
-        text-shadow: rgba(0, 0, 0, 0.35) 0 0.90909em 0.2em;
-    }
-}
-
-@keyframes bounce-google-logo {
-    0% {
-        -webkit-transform: translate3d(0, 0, 0) scale(1);
-        transform: translate3d(0, 0, 0) scale(1);
-        text-shadow: rgba(0, 0, 0, 0.35) 0 0 0.02222em;
-    }
-    100% {
-        -webkit-transform: translate3d(0, -1em, 0) scale(1.1);
-        transform: translate3d(0, -1em, 0) scale(1.1);
-        text-shadow: rgba(0, 0, 0, 0.35) 0 0.90909em 0.2em;
-    }
-}
-
-#hplogo {
-    background: none !important;
+button.capturechat {
     position: relative;
+    top: 29px;
+    border: solid 8px #9C27B0;
+    height: 67px;
+    width: 67px;
+    background-position: -614px -612px;
+    box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    z-index: 1;
+    transition: box-shadow 0.25s, transform 0.25s;
 }
 
-#bouncing-1 {
-    position: absolute;
-    bottom: 8px;
-    left: 0;
-    font-size: 88px;
-    font-weight: 600;
+button.capturechat:hover {
+    transform: rotate(-20deg);
+    box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14), 0 4px 22px 3px rgba(0, 0, 0, 0.12), 0 6px 7px -4px rgba(0, 0, 0, 0.4);
 }
 
-#logo {
-  overflow: visible !important;
-}
-
-#logo img {
-    display: none;
-}
-
-#bouncing-2 {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    font-size: 27px;
-    font-weight: 600;
+button.capturechat:active {
+    transform: rotate(40deg);
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 }
