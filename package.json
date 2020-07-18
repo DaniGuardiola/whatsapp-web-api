@@ -1,0 +1,14 @@
+{
+  "name": "whatsapp-web-extension-api",
+  "version": "1.0.0",
+  "main": "src/api.js",
+  "repository": "git@github.com:DaniGuardiola/whatsapp-web-extension-api.git",
+  "author": "Dani <contact@daniguardiola.me>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.6"
+  }
+}
